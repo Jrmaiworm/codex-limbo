@@ -31,10 +31,28 @@ class Config:
     watch_seconds: int = 30
 
 
-def load_config(path: Path | None = None) -> Config:
+def ensure_config(path: Path | None = None) -> Path:
     path = path or config_path()
-    if not path.exists():
-        return Config()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with path.open("x", encoding="utf-8") as stream:
+            defaults = Config()
+            stream.write(
+                "# codex-limbo local alert settings\n"
+                "[alerts]\n"
+                f"token_threshold = {defaults.token_threshold}\n"
+                f"period_minutes = {defaults.period_minutes}\n"
+                f"quota_drop_percent = {defaults.quota_drop_percent}\n"
+                f"exhaustion_minutes = {defaults.exhaustion_minutes}\n"
+                f"watch_seconds = {defaults.watch_seconds}\n"
+            )
+    except FileExistsError:
+        pass
+    return path
+
+
+def load_config(path: Path | None = None) -> Config:
+    path = ensure_config(path)
     raw = tomllib.loads(path.read_text(encoding="utf-8")).get("alerts", {})
     values = {name: raw[name] for name in Config.__dataclass_fields__ if name in raw}
     config = Config(**values)

@@ -68,7 +68,7 @@ Use `CODEX_HOME` para apontar para outra pasta do Codex. No Linux, `XDG_DATA_HOM
 <details>
 <summary>Configurar os alertas</summary>
 
-Crie o arquivo de configuração indicado acima:
+O arquivo é criado automaticamente no primeiro comando. Edite o arquivo indicado acima para mudar os valores:
 
 ```toml
 [alerts]

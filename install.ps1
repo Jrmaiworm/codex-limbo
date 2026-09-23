@@ -38,7 +38,7 @@ $source = if ($env:CODEX_LIMBO_PACKAGE_SOURCE) {
 } else {
     'https://github.com/jrmaiworm/codex-limbo/archive/refs/heads/main.zip'
 }
-& $uvExe tool install --python 3.11 $source
+& $uvExe tool install --refresh --python 3.11 $source
 if ($LASTEXITCODE -ne 0) {
     throw 'codex-limbo: package installation failed.'
 }
