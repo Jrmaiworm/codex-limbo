@@ -1,5 +1,3 @@
-<img align="right" src="assets/jorgerei-removebg-preview.png" alt="Jorge-rei observando moedas com símbolos de modelos de IA" width="520">
-
 <p align="center">
   <strong>Um pequeno tesouro para acompanhar seus tokens do Codex.</strong><br>
   Histórico, cotas, alertas e estimativas diretamente no terminal, com dados locais.
@@ -14,7 +12,9 @@
 
 > **My precious tokens.** Saiba quanto consumiu antes que a cota desapareça nas sombras.
 
-<br clear="right">
+<p align="center">
+  <img src="assets/jorgerei-removebg-preview.png" alt="Jorge-rei observando moedas com símbolos de modelos de IA" width="520">
+</p>
 
 ## ⚔️ Comece sua jornada
 
