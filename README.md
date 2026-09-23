@@ -32,13 +32,21 @@ irm https://raw.githubusercontent.com/jrmaiworm/codex-limbo/main/install.ps1 | i
 
 Abra um novo terminal depois da instalação e execute `codex-limbo doctor`. Os instaladores configuram [uv](https://docs.astral.sh/uv/getting-started/installation/) e Python 3.11 quando necessário; não exigem `pipx`, Git ou privilégios de administrador. No Linux, `curl` é necessário para baixar o script.
 
+## 👁️ Comando principal: watch
+
+```bash
+codex-limbo watch
+```
+
+Enquanto estiver aberto, o `watch` verifica **automaticamente a cada minuto** as novas linhas das sessões locais. Ele mostra a cota restante, o modelo ativo, os tokens consumidos nos últimos 5 minutos, a previsão de esgotamento e os alertas. A primeira execução indexa o histórico existente; as seguintes leem somente os dados acrescentados. Pressione `Ctrl+C` para encerrar.
+
 ## 🪙 O que há no tesouro
 
 | Comando | O que mostra |
 | --- | --- |
+| `codex-limbo watch` | Monitoramento contínuo do consumo, atualizado automaticamente a cada minuto. |
 | `codex-limbo status` | Cota restante, resets, créditos disponíveis e tokens locais. |
 | `codex-limbo history --hours 6` | Consumo com gráfico em blocos; aceita 1, 3, 6, 12 ou 24 horas. |
-| `codex-limbo watch` | Atualização a cada minuto, velocidade e previsão quando houver dados suficientes. |
 | `codex-limbo alerts` | Avisos para consumo, queda de cota e esgotamento estimado. |
 | `codex-limbo advice` | Comparação de uso por modelo e sugestões estimadas. |
 | `codex-limbo doctor` | Diagnóstico dos arquivos locais, sem abrir credenciais. |
