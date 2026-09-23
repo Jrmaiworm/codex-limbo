@@ -1,4 +1,4 @@
-<img align="right" src="assets/my-precious-tokens.png" alt="Personagem observando moedas com símbolos de modelos de IA" width="300">
+<img align="right" src="assets/my-precious-tokens.png" alt="Jorge-rei observando moedas com símbolos de modelos de IA" width="300">
 
 <p align="center">
   <strong>Um pequeno tesouro para acompanhar seus tokens do Codex.</strong><br>
