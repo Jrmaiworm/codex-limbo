@@ -1,5 +1,5 @@
 """Quota snapshots from local Codex session events."""
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 
 def latest(db):
@@ -19,17 +19,39 @@ def reset_text(epoch) -> str:
     return datetime.fromtimestamp(epoch, timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M %Z")
 
 
-def trend(db, limit_id: str, window: str):
-    rows = db.execute("""SELECT timestamp, used_percent FROM quota
-        WHERE limit_id=? AND window_name=? ORDER BY timestamp DESC LIMIT 2""", (limit_id, window)).fetchall()
-    if len(rows) < 2:
-        return 0.0, None
-    drop = rows[0]["used_percent"] - rows[1]["used_percent"]
+def trend(db, limit_id: str, window: str, window_minutes: int = 5):
+    latest_row = db.execute("""SELECT timestamp, used_percent, resets_at FROM quota
+        WHERE limit_id=? AND window_name=? ORDER BY timestamp DESC, rowid DESC LIMIT 1""",
+        (limit_id, window)).fetchone()
+    if latest_row is None:
+        return None, None
     try:
-        seconds = (datetime.fromisoformat(rows[0]["timestamp"].replace("Z", "+00:00")) -
-                   datetime.fromisoformat(rows[1]["timestamp"].replace("Z", "+00:00"))).total_seconds()
+        current = datetime.fromisoformat(latest_row["timestamp"].replace("Z", "+00:00"))
+        if current.tzinfo is None:
+            current = current.replace(tzinfo=timezone.utc)
     except ValueError:
-        return drop, None
-    # Short intervals can produce wildly unstable forecasts as snapshots arrive in bursts.
-    minutes_left = (100 - rows[0]["used_percent"]) * seconds / (drop * 60) if drop > 0 and seconds >= 900 else None
+        return None, None
+    cutoff = current - timedelta(minutes=window_minutes)
+    rows = db.execute("""SELECT timestamp, used_percent FROM quota
+        WHERE limit_id=? AND window_name=? AND resets_at IS ?
+          AND timestamp>=? AND timestamp<=? ORDER BY timestamp ASC, rowid ASC""",
+        (limit_id, window, latest_row["resets_at"], cutoff.strftime("%Y-%m-%dT%H:%M:%S"), latest_row["timestamp"])).fetchall()
+    baseline = None
+    baseline_time = None
+    for row in rows:
+        try:
+            when = datetime.fromisoformat(row["timestamp"].replace("Z", "+00:00"))
+            if when.tzinfo is None:
+                when = when.replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+        if cutoff <= when < current:
+            baseline, baseline_time = row, when
+            break
+    if baseline is None:
+        return None, None
+    seconds = (current - baseline_time).total_seconds()
+    drop = max(0.0, latest_row["used_percent"] - baseline["used_percent"])
+    # A forecast based on a burst shorter than a minute is too unstable.
+    minutes_left = (100 - latest_row["used_percent"]) * seconds / (drop * 60) if drop > 0 and seconds >= 60 else None
     return drop, minutes_left

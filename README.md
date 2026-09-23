@@ -38,7 +38,7 @@ Abra um novo terminal depois da instalação e execute `codex-limbo doctor`. Os 
 | --- | --- |
 | `codex-limbo status` | Cota restante, resets, créditos disponíveis e tokens locais. |
 | `codex-limbo history --hours 6` | Consumo com gráfico em blocos; aceita 1, 3, 6, 12 ou 24 horas. |
-| `codex-limbo watch --seconds 30` | Atualização contínua, velocidade e previsão quando houver dados suficientes. |
+| `codex-limbo watch` | Atualização a cada minuto, velocidade e previsão quando houver dados suficientes. |
 | `codex-limbo alerts` | Avisos para consumo, queda de cota e esgotamento estimado. |
 | `codex-limbo advice` | Comparação de uso por modelo e sugestões estimadas. |
 | `codex-limbo doctor` | Diagnóstico dos arquivos locais, sem abrir credenciais. |
@@ -47,16 +47,24 @@ Exemplo rápido:
 
 ```text
 $ codex-limbo status
-codex 5h: 72.0% remaining; reset 2026-09-23 19:53; credits unavailable
-Tokens today: 128,400; last hour: 12,300 (local estimates)
-Local token rate: 205.0/min
+╭──── Cota oficial · codex · 5h ────╮
+│ Restante     72.0%                │
+│ Reset        2026-09-23 19:53 -03 │
+│ Créditos     indisponíveis        │
+│ Atualização  23/09/2026 18:00     │
+╰───────────────────────────────────╯
+╭──── Uso local · estimativas ────╮
+│ Hoje         128,400 tokens     │
+│ Última hora  12,300 tokens      │
+│ Ritmo        205.0 tokens/min   │
+╰─────────────────────────────────╯
 ```
 
 O exemplo é ilustrativo. Os números reais vêm das sessões da sua máquina.
 
 ## 🧭 De onde vêm os números
 
-O programa lê eventos de tokens e cota em `~/.codex/sessions` e `~/.codex/archived_sessions`. Salva apenas identificadores de sessão, horários, nomes de projeto e modelo, contadores numéricos e snapshots de cota em SQLite. Reimportações substituem registros com a mesma sessão e horário.
+O programa lê eventos de tokens e cota em `~/.codex/sessions` e `~/.codex/archived_sessions`. Salva apenas identificadores de sessão, horários, nomes de projeto e modelo, contadores numéricos e snapshots de cota em SQLite. A primeira execução após esta atualização indexa os arquivos existentes; depois, o programa guarda uma posição por sessão e lê somente as linhas novas. Arquivos substituídos são reprocessados. Reimportações substituem registros com a mesma sessão e horário.
 
 | Sistema | Banco SQLite | Configuração |
 | --- | --- | --- |
@@ -72,14 +80,26 @@ O arquivo é criado automaticamente no primeiro comando. Edite o arquivo indicad
 
 ```toml
 [alerts]
-token_threshold = 100000
-period_minutes = 60
-quota_drop_percent = 15.0
+token_threshold = 10000
+period_minutes = 5
+quota_drop_percent = 5.0
 exhaustion_minutes = 60
-watch_seconds = 30
+watch_seconds = 60
 ```
 
-Os alertas aparecem somente no terminal.
+Os alertas aparecem somente no terminal. O padrão verifica 10.000 tokens e 5 pontos de queda de cota em uma janela de 5 minutos; snapshots antigos não disparam alertas de cota. `watch` verifica a cada 60 segundos, lendo apenas os bytes acrescentados às sessões desde a última atualização.
+
+Quando há snapshots suficientes, o alerta combina tokens locais, porcentagem consumida da cota e previsão:
+
+```text
+Cota codex 5h
+  Últimos 5 min: 25,000 tokens locais
+  Cota consumida: 6.0% nos últimos 5 min
+  Consumo elevado.
+  Nesse ritmo, a cota pode acabar em 42 min (estimativa).
+```
+
+A previsão usa a variação da cota registrada pelo Codex; ela não representa uma contagem exata de tokens restantes.
 
 </details>
 

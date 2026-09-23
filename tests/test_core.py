@@ -1,11 +1,14 @@
 import json
+from io import StringIO
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from rich.console import Console
 from codex_limbo.sessions import parse_session
 from codex_limbo.database import connect, save
 from codex_limbo.alerts import check
+from codex_limbo.cli import show_status
 from codex_limbo.config import Config
-from codex_limbo.history import total
+from codex_limbo.history import recent_model, total
 from codex_limbo.quota import trend
 
 
@@ -41,7 +44,40 @@ def test_database_deduplicates_and_alerts(tmp_path):
 
 def test_quota_trend(tmp_path):
     db = connect(tmp_path / "data.sqlite3")
-    save(db, [], [("s", stamp(-30), "codex", "5h", 20, 0, None), ("s", stamp(), "codex", "5h", 40, 0, None)])
+    save(db, [], [("s", stamp(-4), "codex", "5h", 20, 123, None), ("s", stamp(), "codex", "5h", 40, 123, None)])
     drop, eta = trend(db, "codex", "5h")
     assert drop == 20
-    assert 89 < eta < 91
+    assert 11 < eta < 13
+
+
+def test_quota_alert_uses_recent_window_and_ignores_reset(tmp_path):
+    db = connect(tmp_path / "data.sqlite3")
+    save(db, [], [("s", stamp(-6), "codex", "5h", 10, 123, None),
+                  ("s", stamp(-4), "codex", "5h", 20, 123, None),
+                  ("s", stamp(), "codex", "5h", 26, 123, None)])
+    assert any("Cota consumida: 6.0%" in message and "Nesse ritmo" in message for _, message in check(db, Config()))
+    save(db, [], [("s", stamp(1), "codex", "5h", 30, 456, None)])
+    assert trend(db, "codex", "5h") == (None, None)
+
+
+def test_old_quota_snapshot_does_not_alert(tmp_path):
+    db = connect(tmp_path / "data.sqlite3")
+    save(db, [], [("s", stamp(-20), "codex", "5h", 20, 123, None),
+                  ("s", stamp(-16), "codex", "5h", 95, 123, None)])
+    assert check(db, Config()) == []
+
+
+def test_status_shows_recent_model_consumption_and_forecast(tmp_path):
+    db = connect(tmp_path / "data.sqlite3")
+    save(db, [("s", stamp(-3), "model-a", "demo", 10, 10, 20),
+              ("s", stamp(-1), "model-b", "demo", 20, 10, 30),
+              ("s", stamp(), "model-b", "demo", 10, 10, 20)],
+         [("s", stamp(-4), "codex", "5h", 20, 123, None),
+          ("s", stamp(), "codex", "5h", 40, 123, None)])
+    assert recent_model(db, 5) == ("model-b", 50)
+    output = StringIO()
+    show_status(db, Console(file=output, width=72, color_system=None), Config())
+    rendered = output.getvalue()
+    assert "Previsão" in rendered and "até esgotar" in rendered
+    assert "Modelo ativo" in rendered and "model-b" in rendered
+    assert "Modelo/5 min" in rendered and "50 tokens" in rendered

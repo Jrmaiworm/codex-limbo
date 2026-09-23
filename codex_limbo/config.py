@@ -24,11 +24,11 @@ def codex_home() -> Path:
 
 @dataclass(frozen=True)
 class Config:
-    token_threshold: int = 100_000
-    period_minutes: int = 60
-    quota_drop_percent: float = 15.0
+    token_threshold: int = 10_000
+    period_minutes: int = 5
+    quota_drop_percent: float = 5.0
     exhaustion_minutes: int = 60
-    watch_seconds: int = 30
+    watch_seconds: int = 60
 
 
 def ensure_config(path: Path | None = None) -> Path:

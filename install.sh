@@ -30,8 +30,10 @@ else
 fi
 
 limbo_source="${CODEX_LIMBO_PACKAGE_SOURCE:-https://github.com/jrmaiworm/codex-limbo/archive/refs/heads/main.zip}"
-"$limbo_uv" tool install --refresh --python 3.11 "$limbo_source"
-"$limbo_uv" tool update-shell
+"$limbo_uv" tool install --reinstall --refresh --python 3.11 "$limbo_source"
+if ! "$limbo_uv" tool update-shell; then
+  printf 'codex-limbo: PATH setup needs a new terminal; the executable is installed in %s.\n' "$limbo_bin_dir" >&2
+fi
 
 printf '\ncodex-limbo installed. Open a new terminal and run: codex-limbo doctor\n'
 printf 'You can run it now with: %s/codex-limbo doctor\n' "$limbo_bin_dir"

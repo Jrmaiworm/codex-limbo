@@ -20,7 +20,7 @@ def test_installer_uses_uv_without_pipx(tmp_path):
     result = subprocess.run(["bash", str(INSTALLER)], env=env, text=True, capture_output=True)
     assert result.returncode == 0, result.stderr
     assert (tmp_path / "uv-calls").read_text().splitlines() == [
-        "tool install --refresh --python 3.11 /tmp/local-package", "tool update-shell"
+        "tool install --reinstall --refresh --python 3.11 /tmp/local-package", "tool update-shell"
     ]
 
 
@@ -41,4 +41,4 @@ SCRIPT
     env.update(HOME=str(tmp_path), PATH=f'{bin_dir}:/usr/bin:/bin', CODEX_LIMBO_PACKAGE_SOURCE="/tmp/local-package")
     result = subprocess.run(["bash", str(INSTALLER)], env=env, text=True, capture_output=True)
     assert result.returncode == 0, result.stderr
-    assert "tool install --refresh --python 3.11 /tmp/local-package" in (tmp_path / "uv-calls").read_text()
+    assert "tool install --reinstall --refresh --python 3.11 /tmp/local-package" in (tmp_path / "uv-calls").read_text()
