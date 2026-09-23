@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="assets/my-precious-tokens.png" alt="Gollum observando moedas com símbolos de modelos de IA — my precious tokens" width="820">
-</p>
+<img align="right" src="assets/my-precious-tokens.png" alt="Personagem observando moedas com símbolos de modelos de IA" width="300">
 
 <p align="center">
   <strong>Um pequeno tesouro para acompanhar seus tokens do Codex.</strong><br>
@@ -15,6 +13,8 @@
 </p>
 
 > **My precious tokens.** Saiba quanto consumiu antes que a cota desapareça nas sombras.
+
+<br clear="right">
 
 ## ⚔️ Comece sua jornada
 
