@@ -1,45 +1,74 @@
-# codex-limbo
+<p align="center">
+  <img src="assets/coin-banner.svg" alt="codex-limbo — my precious tokens" width="100%">
+</p>
 
-Local, offline Codex usage monitor for Linux and Windows.
+<p align="center">
+  <strong>Um pequeno tesouro para acompanhar seus tokens do Codex.</strong><br>
+  Histórico, cotas, alertas e estimativas diretamente no terminal, com dados locais.
+</p>
 
-## Install on Linux
+<p align="center">
+  <a href="LICENSE"><img alt="Licença MIT" src="https://img.shields.io/badge/licen%C3%A7a-MIT-C99B48?style=flat-square"></a>
+  <img alt="Python 3.11 ou superior" src="https://img.shields.io/badge/Python-3.11%2B-DFB45E?style=flat-square">
+  <img alt="Linux e Windows" src="https://img.shields.io/badge/sistemas-Linux%20%7C%20Windows-9B7138?style=flat-square">
+  <a href="https://github.com/Jrmaiworm/codex-limbo/actions/workflows/windows.yml"><img alt="Teste no Windows" src="https://img.shields.io/github/actions/workflow/status/Jrmaiworm/codex-limbo/windows.yml?branch=main&label=Windows&style=flat-square"></a>
+</p>
+
+> **My precious tokens.** Saiba quanto consumiu antes que a cota desapareça nas sombras.
+
+## ⚔️ Comece sua jornada
+
+**Linux / Ubuntu** — cole no terminal:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/jrmaiworm/codex-limbo/main/install.sh | bash
 ```
 
-The installer downloads [uv](https://docs.astral.sh/uv/getting-started/installation/) if needed; uv then downloads Python 3.11 and installs codex-limbo from the GitHub source archive into an isolated environment. `pipx`, Git and a preinstalled Python are not required. Ubuntu needs `curl` to fetch this script; inside the script, either `curl` or `wget` can download uv. No `sudo` is used.
-
-## Install on Windows
-
-Run in PowerShell:
+**Windows** — cole no PowerShell:
 
 ```powershell
 irm https://raw.githubusercontent.com/jrmaiworm/codex-limbo/main/install.ps1 | iex
 ```
 
-The Windows installer downloads uv and Python 3.11 if needed, installs the tool from GitHub, and adds its executable directory to the user PATH. No `pipx`, Git, administrator access or preinstalled Python is needed. Open a new PowerShell window after installation.
+Abra um novo terminal depois da instalação e execute `codex-limbo doctor`. Os instaladores configuram [uv](https://docs.astral.sh/uv/getting-started/installation/) e Python 3.11 quando necessário; não exigem `pipx`, Git ou privilégios de administrador. No Linux, `curl` é necessário para baixar o script.
 
-For local development from this checkout: `pipx install .`. To run tests: `python -m pip install -e '.[test]'` and `pytest`.
+## 🪙 O que há no tesouro
 
-## Commands
+| Comando | O que mostra |
+| --- | --- |
+| `codex-limbo status` | Cota restante, resets, créditos disponíveis e tokens locais. |
+| `codex-limbo history --hours 6` | Consumo com gráfico em blocos; aceita 1, 3, 6, 12 ou 24 horas. |
+| `codex-limbo watch --seconds 30` | Atualização contínua, velocidade e previsão quando houver dados suficientes. |
+| `codex-limbo alerts` | Avisos para consumo, queda de cota e esgotamento estimado. |
+| `codex-limbo advice` | Comparação de uso por modelo e sugestões estimadas. |
+| `codex-limbo doctor` | Diagnóstico dos arquivos locais, sem abrir credenciais. |
 
-```bash
-codex-limbo status
-codex-limbo history --hours 6   # 1, 3, 6, 12 or 24
-codex-limbo watch --seconds 30
-codex-limbo alerts
-codex-limbo advice
-codex-limbo doctor
+Exemplo rápido:
+
+```text
+$ codex-limbo status
+codex 5h: 72.0% remaining; reset 2026-09-23 19:53; credits unavailable
+Tokens today: 128,400; last hour: 12,300 (local estimates)
+Local token rate: 205.0/min
 ```
 
-The first five commands import local `~/.codex/sessions` and `~/.codex/archived_sessions` JSONL files. The SQLite database is stored at `~/.local/share/codex-limbo/usage.sqlite3` on Linux and `%LOCALAPPDATA%\codex-limbo\usage.sqlite3` on Windows. Set `CODEX_HOME` to use another Codex directory, or `XDG_DATA_HOME` on Linux for another data location. Reimports replace the same session/timestamp records.
+O exemplo é ilustrativo. Os números reais vêm das sessões da sua máquina.
 
-`status` shows quota snapshots recorded in local Codex session events, plus token totals estimated from those events. The official quota may be missing, stale, or depend on nonpublic Codex interfaces and formats; this tool makes no authenticated network requests. Token counts are local estimates and can differ from billing or quota units. Today starts at local midnight; history windows are rolling. Reset times use the machine's local timezone. `watch` refreshes from local files and can be stopped with Ctrl+C.
+## 🧭 De onde vêm os números
 
-## Alert configuration
+O programa lê eventos de tokens e cota em `~/.codex/sessions` e `~/.codex/archived_sessions`. Salva apenas identificadores de sessão, horários, nomes de projeto e modelo, contadores numéricos e snapshots de cota em SQLite. Reimportações substituem registros com a mesma sessão e horário.
 
-Create `~/.config/codex-limbo/config.toml` on Linux or `%APPDATA%\codex-limbo\config.toml` on Windows:
+| Sistema | Banco SQLite | Configuração |
+| --- | --- | --- |
+| Linux | `~/.local/share/codex-limbo/usage.sqlite3` | `~/.config/codex-limbo/config.toml` |
+| Windows | `%LOCALAPPDATA%\codex-limbo\usage.sqlite3` | `%APPDATA%\codex-limbo\config.toml` |
+
+Use `CODEX_HOME` para apontar para outra pasta do Codex. No Linux, `XDG_DATA_HOME` e `XDG_CONFIG_HOME` também são respeitados.
+
+<details>
+<summary>Configurar os alertas</summary>
+
+Crie o arquivo de configuração indicado acima:
 
 ```toml
 [alerts]
@@ -50,10 +79,29 @@ exhaustion_minutes = 60
 watch_seconds = 30
 ```
 
-Alerts are printed locally. Quota drop and exhaustion estimates compare successive recorded snapshots. Advice compares observed tokens per event; it does not know prices or task complexity, so cost benefit suggestions are estimates.
+Os alertas aparecem somente no terminal.
 
-## Privacy
+</details>
 
-The importer reads session metadata, model IDs, token counters and rate limit fields. It stores only session IDs, timestamps, project directory names, model IDs, numeric usage and quota fields. It does not store prompts, answers, file contents, cookies or authentication credentials. `doctor` checks whether an authentication file exists, but never opens it. Nothing is sent to a server. The database remains on this machine.
+## 🔒 A moeda fica com você
 
-No automatic quota reset is implemented.
+- Nenhum prompt, resposta, arquivo de trabalho, cookie ou credencial é salvo no banco ou enviado a servidores.
+- `doctor` verifica a existência do arquivo de autenticação, sem ler seu conteúdo.
+- As cotas são snapshots registrados localmente pelo Codex. Podem estar ausentes ou desatualizadas, e seu formato depende de interfaces não públicas.
+- Tokens, velocidade, previsão de esgotamento e custo-benefício são **estimativas locais**; não equivalem necessariamente à cobrança ou à cota oficial.
+- Não há reset automático de cota.
+
+## 🛠️ Desenvolver
+
+Requer Python 3.11+:
+
+```bash
+python -m pip install -e '.[test]'
+pytest
+```
+
+O pacote também pode ser instalado de um checkout local com `pipx install .`.
+
+---
+
+<p align="center"><em>Uma moeda para contar todos os tokens.</em></p>
