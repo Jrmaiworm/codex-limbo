@@ -2,14 +2,19 @@
 from dataclasses import dataclass
 from pathlib import Path
 import os
+import sys
 import tomllib
 
 
 def data_dir() -> Path:
+    if sys.platform == "win32":
+        return Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData/Local")) / "codex-limbo"
     return Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share")) / "codex-limbo"
 
 
 def config_path() -> Path:
+    if sys.platform == "win32":
+        return Path(os.environ.get("APPDATA", Path.home() / "AppData/Roaming")) / "codex-limbo/config.toml"
     return Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "codex-limbo/config.toml"
 
 
