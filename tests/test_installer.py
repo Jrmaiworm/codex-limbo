@@ -1,9 +1,12 @@
 import os
 import subprocess
+import sys
 from pathlib import Path
+import pytest
 
 
 INSTALLER = Path(__file__).resolve().parents[1] / "install.sh"
+pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="Bash installer is Linux-only")
 
 
 def test_installer_uses_uv_without_pipx(tmp_path):
