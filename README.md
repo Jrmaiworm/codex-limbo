@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/coin-banner.svg" alt="codex-limbo — my precious tokens" width="100%">
+  <img src="assets/my-precious-tokens.png" alt="Gollum observando moedas com símbolos de modelos de IA — my precious tokens" width="820">
 </p>
 
 <p align="center">
